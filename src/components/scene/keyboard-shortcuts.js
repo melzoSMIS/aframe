@@ -28,7 +28,7 @@ module.exports.Component = registerComponent('keyboard-shortcuts', {
     var scene = this.el;
     if (!shouldCaptureKeyEvent(evt)) { return; }
     if (this.enterVREnabled && evt.keyCode === 70) {  // f.
-      scene.enterVR();
+      // scene.enterVR(); // SMIS
     }
     if (this.enterVREnabled && evt.keyCode === 27) {  // escape.
       scene.exitVR();

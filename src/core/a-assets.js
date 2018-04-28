@@ -104,6 +104,9 @@ registerElement('a-asset-item', {
       value: function () {
         var self = this;
         var src = this.getAttribute('src');
+
+        if (!src) { return; } // SMIS
+
         fileLoader.setResponseType(
           this.getAttribute('response-type') || inferResponseType(src));
         fileLoader.load(src, function handleOnLoad (response) {

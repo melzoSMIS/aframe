@@ -18,6 +18,7 @@ module.exports.Component = registerComponent('look-controls', {
 
   schema: {
     enabled: {default: true},
+    gyroModeEnabled: { default: false }, // SMIS
     hmdEnabled: {default: true},
     pointerLockEnabled: {default: false},
     reverseMouseDrag: {default: false},
@@ -187,6 +188,7 @@ module.exports.Component = registerComponent('look-controls', {
     var pitchObject = this.pitchObject;
     var yawObject = this.yawObject;
     var sceneEl = this.el.sceneEl;
+    var gyroModeEnabled = this.data.gyroModeEnabled;
 
     // In VR mode, THREE is in charge of updating the camera rotation.
     if (sceneEl.is('vr-mode') && sceneEl.checkHeadsetConnected()) { return; }
@@ -195,10 +197,16 @@ module.exports.Component = registerComponent('look-controls', {
     this.polyfillControls.update();
     hmdEuler.setFromQuaternion(this.polyfillObject.quaternion, 'YXZ');
 
-    // On mobile, do camera rotation with touch events and sensors.
-    el.object3D.rotation.x = hmdEuler.x + pitchObject.rotation.x;
-    el.object3D.rotation.y = hmdEuler.y + yawObject.rotation.y;
-    el.object3D.rotation.z = 0;
+    if (!gyroModeEnabled) {
+      el.object3D.rotation.x = pitchObject.rotation.x;
+      el.object3D.rotation.y = yawObject.rotation.y;
+      el.object3D.rotation.z = 0;
+    } else {
+      // On mobile, do camera rotation with touch events and sensors.
+      el.object3D.rotation.x = hmdEuler.x + pitchObject.rotation.x;
+      el.object3D.rotation.y = hmdEuler.y + yawObject.rotation.y;
+      el.object3D.rotation.z = 0;
+    }
   },
 
   /**
@@ -285,14 +293,18 @@ module.exports.Component = registerComponent('look-controls', {
   onTouchMove: function (evt) {
     var canvas = this.el.sceneEl.canvas;
     var deltaY;
+    var deltaX; // SMIS
     var yawObject = this.yawObject;
+    var pitchObject = this.pitchObject; // SMIS
 
     if (!this.touchStarted || !this.data.touchEnabled) { return; }
 
     deltaY = 2 * Math.PI * (evt.touches[0].pageX - this.touchStart.x) / canvas.clientWidth;
+    deltaX = 2 * Math.PI * (evt.touches[0].pageY - this.touchStart.y) / canvas.clientHeight; // SMIS
 
     // Limit touch orientaion to to yaw (y axis).
     yawObject.rotation.y -= deltaY * 0.5;
+    pitchObject.rotation.x -= deltaX * 0.5; // SMIS
     this.touchStart = {
       x: evt.touches[0].pageX,
       y: evt.touches[0].pageY

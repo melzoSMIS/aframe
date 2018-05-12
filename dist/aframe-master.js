@@ -65436,7 +65436,7 @@ module.exports.Component = registerComponent('look-controls', {
 
   schema: {
     enabled: {default: true},
-    gyroModeEnabled: { default: false }, // SMIS 
+    gyroModeEnabled: { default: false }, // SMIS
     hmdEnabled: {default: true},
     pointerLockEnabled: {default: false},
     reverseMouseDrag: {default: false},
@@ -65615,15 +65615,15 @@ module.exports.Component = registerComponent('look-controls', {
     this.polyfillControls.update();
     hmdEuler.setFromQuaternion(this.polyfillObject.quaternion, 'YXZ');
 
-    if (!gyroModeEnabled) { 
-      el.object3D.rotation.x = pitchObject.rotation.x; 
-      el.object3D.rotation.y = yawObject.rotation.y; 
-      el.object3D.rotation.z = 0; 
-    } else { 
-      // On mobile, do camera rotation with touch events and sensors. 
-      el.object3D.rotation.x = hmdEuler.x + pitchObject.rotation.x; 
-      el.object3D.rotation.y = hmdEuler.y + yawObject.rotation.y; 
-      el.object3D.rotation.z = 0; 
+    if (!gyroModeEnabled) {
+      el.object3D.rotation.x = pitchObject.rotation.x;
+      el.object3D.rotation.y = yawObject.rotation.y;
+      el.object3D.rotation.z = 0;
+    } else {
+      // On mobile, do camera rotation with touch events and sensors.
+      el.object3D.rotation.x = hmdEuler.x + pitchObject.rotation.x;
+      el.object3D.rotation.y = hmdEuler.y + yawObject.rotation.y;
+      el.object3D.rotation.z = 0;
     }
   },
 
@@ -65713,16 +65713,16 @@ module.exports.Component = registerComponent('look-controls', {
     var deltaY;
     var deltaX; // SMIS
     var yawObject = this.yawObject;
-    var pitchObject = this.pitchObject; // SMIS 
+    var pitchObject = this.pitchObject; // SMIS
 
     if (!this.touchStarted || !this.data.touchEnabled) { return; }
 
     deltaY = 2 * Math.PI * (evt.touches[0].pageX - this.touchStart.x) / canvas.clientWidth;
-    deltaX = 2 * Math.PI * (evt.touches[0].pageY - this.touchStart.y) / canvas.clientHeight; // SMIS 
+    deltaX = 2 * Math.PI * (evt.touches[0].pageY - this.touchStart.y) / canvas.clientHeight; // SMIS
 
     // Limit touch orientaion to to yaw (y axis).
     yawObject.rotation.y -= deltaY * 0.5;
-    pitchObject.rotation.x -= deltaX * 0.5; // SMIS 
+    pitchObject.rotation.x -= deltaX * 0.5; // SMIS
     this.touchStart = {
       x: evt.touches[0].pageX,
       y: evt.touches[0].pageY
@@ -70577,8 +70577,8 @@ registerElement('a-asset-item', {
         var self = this;
         var src = this.getAttribute('src');
 
-        if (!src) { return; } // SMIS 
-        
+        if (!src) { return; } // SMIS
+
         fileLoader.setResponseType(
           this.getAttribute('response-type') || inferResponseType(src));
         fileLoader.load(src, function handleOnLoad (response) {
@@ -75556,7 +75556,7 @@ _dereq_('./core/a-mixin');
 _dereq_('./extras/components/');
 _dereq_('./extras/primitives/');
 
-console.log('A-Frame Version: 0.8.2 (Date 2018-04-28, Commit #abd7b99)');
+console.log('A-Frame Version: 0.8.2 (Date 2018-05-12, Commit #febfd20)');
 console.log('three Version:', pkg.dependencies['three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 
@@ -76733,16 +76733,16 @@ module.exports.System = registerSystem('material', {
     setTextureProperties(texture, data);
 
     // If iOS and video is HLS, do some hacks.
-    if (this.sceneEl.isIOS &&
-        isHLS(videoEl.src || videoEl.getAttribute('src'),
-              videoEl.type || videoEl.getAttribute('type'))) {
-      // Actually BGRA. Tell shader to correct later.
-      texture.format = THREE.RGBAFormat;
-      texture.needsCorrectionBGRA = true;
-      // Apparently needed for HLS. Tell shader to correct later.
-      texture.flipY = false;
-      texture.needsCorrectionFlipY = true;
-    }
+    // if (this.sceneEl.isIOS &&
+    //     isHLS(videoEl.src || videoEl.getAttribute('src'),
+    //           videoEl.type || videoEl.getAttribute('type'))) {
+    //   // Actually BGRA. Tell shader to correct later.
+    //   texture.format = THREE.RGBAFormat;
+    //   texture.needsCorrectionBGRA = true;
+    //   // Apparently needed for HLS. Tell shader to correct later.
+    //   texture.flipY = false;
+    //   texture.needsCorrectionFlipY = true;
+    // }
 
     // Cache as promise to be consistent with image texture caching.
     videoTextureResult = {texture: texture, videoEl: videoEl};

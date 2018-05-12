@@ -1,7 +1,7 @@
 var registerSystem = require('../core/system').registerSystem;
 var THREE = require('../lib/three');
 var utils = require('../utils/');
-var isHLS = require('../utils/material').isHLS;
+// var isHLS = require('../utils/material').isHLS;
 
 var bind = utils.bind;
 var debug = utils.debug;
@@ -156,16 +156,16 @@ module.exports.System = registerSystem('material', {
     setTextureProperties(texture, data);
 
     // If iOS and video is HLS, do some hacks.
-    if (this.sceneEl.isIOS &&
-        isHLS(videoEl.src || videoEl.getAttribute('src'),
-              videoEl.type || videoEl.getAttribute('type'))) {
-      // Actually BGRA. Tell shader to correct later.
-      texture.format = THREE.RGBAFormat;
-      texture.needsCorrectionBGRA = true;
-      // Apparently needed for HLS. Tell shader to correct later.
-      texture.flipY = false;
-      texture.needsCorrectionFlipY = true;
-    }
+    // if (this.sceneEl.isIOS &&
+    //     isHLS(videoEl.src || videoEl.getAttribute('src'),
+    //           videoEl.type || videoEl.getAttribute('type'))) {
+    //   // Actually BGRA. Tell shader to correct later.
+    //   texture.format = THREE.RGBAFormat;
+    //   texture.needsCorrectionBGRA = true;
+    //   // Apparently needed for HLS. Tell shader to correct later.
+    //   texture.flipY = false;
+    //   texture.needsCorrectionFlipY = true;
+    // }
 
     // Cache as promise to be consistent with image texture caching.
     videoTextureResult = {texture: texture, videoEl: videoEl};

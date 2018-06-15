@@ -27706,7 +27706,8 @@ function rebuildAttribute (attrib, data, itemSize) {
 			if ( object.visible === false ) return;
 
 			var visible = object.layers.test( camera.layers );
-
+			var MAX_DISTANCE = 100000;
+			var distance = MAX_DISTANCE; // smis
 			if ( visible ) {
 
 				if ( object.isLight ) {
@@ -27730,13 +27731,14 @@ function rebuildAttribute (attrib, data, itemSize) {
 				} else if ( object.isImmediateRenderObject ) {
 
 					if ( sortObjects ) {
-
-						_vector3.setFromMatrixPosition( object.matrixWorld )
-							.applyMatrix4( _projScreenMatrix );
+						// smis
+						_vector3.setFromMatrixPosition( object.matricesixWorld );
+							// .applyMatrix4( _projScreenMatrix ); 
+						distance = (_vector3.x * _vector3.x)/10000 + (_vector3.y * _vector3.y)/10000 + (_vector3.z * _vector3.z)/10000;
 
 					}
 
-					currentRenderList.push( object, null, object.material, _vector3.z, null );
+					currentRenderList.push( object, null, object.material, distance, null );
 
 				} else if ( object.isMesh || object.isLine || object.isPoints ) {
 
@@ -27750,8 +27752,10 @@ function rebuildAttribute (attrib, data, itemSize) {
 
 						if ( sortObjects ) {
 
-							_vector3.setFromMatrixPosition( object.matrixWorld )
-								.applyMatrix4( _projScreenMatrix );
+							// smis
+							_vector3.setFromMatrixPosition( object.matrixWorld );
+								// .applyMatrix4( _projScreenMatrix );
+							distance = (_vector3.x * _vector3.x)/10000 + (_vector3.y * _vector3.y)/10000 + (_vector3.z * _vector3.z)/10000;
 
 						}
 
@@ -27769,7 +27773,7 @@ function rebuildAttribute (attrib, data, itemSize) {
 
 								if ( groupMaterial && groupMaterial.visible ) {
 
-									currentRenderList.push( object, geometry, groupMaterial, _vector3.z, group );
+									currentRenderList.push( object, geometry, groupMaterial, distance, group );
 
 								}
 
@@ -27777,7 +27781,7 @@ function rebuildAttribute (attrib, data, itemSize) {
 
 						} else if ( material.visible ) {
 
-							currentRenderList.push( object, geometry, material, _vector3.z, null );
+							currentRenderList.push( object, geometry, material, distance, null );
 
 						}
 

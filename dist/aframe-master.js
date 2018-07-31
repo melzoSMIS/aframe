@@ -73420,7 +73420,7 @@ module.exports.AScene = registerElement('a-scene', {
     exitVR: {
       value: function (fromExternal) {
         var self = this;
-        var vrDisplay;
+        // var vrDisplay; SMIS
 
         // Don't exit VR if not in VR.
         if (!this.is('vr-mode')) { return Promise.resolve('Not in VR.'); }
@@ -73428,10 +73428,12 @@ module.exports.AScene = registerElement('a-scene', {
         exitFullscreen();
 
         // Handle exiting VR if not yet already and in a headset or polyfill.
-        if (!fromExternal && (this.checkHeadsetConnected() || this.isMobile)) {
+        // SMIS
+        if (!fromExternal && (this.checkHeadsetConnected() || this.isMobile) || this.isMobile) {
           this.renderer.vr.enabled = false;
-          vrDisplay = utils.device.getVRDisplay();
-          return vrDisplay.exitPresent().then(exitVRSuccess, exitVRFailure);
+          // SMIS commented
+          // vrDisplay = utils.device.getVRDisplay();
+          // return vrDisplay.exitPresent().then(exitVRSuccess, exitVRFailure);
         }
 
         // Handle exiting VR in all other cases (2D fullscreen, external exit VR event).
@@ -73452,13 +73454,14 @@ module.exports.AScene = registerElement('a-scene', {
           self.emit('exit-vr', {target: self});
         }
 
+        /* SMIS
         function exitVRFailure (err) {
           if (err && err.message) {
             throw new Error('Failed to exit VR mode (`exitPresent`): ' + err.message);
           } else {
             throw new Error('Failed to exit VR mode (`exitPresent`).');
           }
-        }
+        } */
       },
       writable: true
     },
@@ -75560,7 +75563,7 @@ _dereq_('./core/a-mixin');
 _dereq_('./extras/components/');
 _dereq_('./extras/primitives/');
 
-console.log('A-Frame Version: 0.8.2 (Date 2018-05-12, Commit #febfd20)');
+console.log('A-Frame Version: 0.8.2 (Date 2018-07-31, Commit #8de4057)');
 console.log('three Version:', pkg.dependencies['three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 

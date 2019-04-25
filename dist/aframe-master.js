@@ -64098,7 +64098,6 @@ module.exports={
     "ghpages": "ghpages -p gh-pages/",
     "lint": "semistandard -v | snazzy",
     "lint:fix": "semistandard --fix",
-    "precommit": "npm run lint",
     "prepush": "node scripts/testOnlyCheck.js",
     "prerelease": "node scripts/release.js 0.7.1 0.8.0",
     "start": "npm run dev",
@@ -64377,14 +64376,15 @@ module.exports.Component = registerComponent('cursor', {
   dependencies: ['raycaster'],
 
   schema: {
-    downEvents: {default: []},
-    fuse: {default: utils.device.isMobile()},
-    fuseTimeout: {default: 1500, min: 0},
-    upEvents: {default: []},
-    rayOrigin: {default: 'entity', oneOf: ['mouse', 'entity']}
+    downEvents: { default: [] },
+    fuse: { default: utils.device.isMobile() },
+    fuseTimeout: { default: 1500, min: 0 },
+    upEvents: { default: [] },
+    rayOrigin: { default: 'entity', oneOf: ['mouse', 'entity'] },
+    disabledEvents: { default: [] } // SMIS - Disable these events emit on intersected Element
   },
 
-  init: function () {
+  init: function() {
     var self = this;
 
     this.fuseTimeout = undefined;
@@ -64393,12 +64393,12 @@ module.exports.Component = registerComponent('cursor', {
     this.canvasBounds = document.body.getBoundingClientRect();
 
     // Debounce.
-    this.updateCanvasBounds = utils.debounce(function updateCanvasBounds () {
+    this.updateCanvasBounds = utils.debounce(function updateCanvasBounds() {
       self.canvasBounds = self.el.sceneEl.canvas.getBoundingClientRect();
     }, 1000);
 
     this.eventDetail = {};
-    this.intersectedEventDetail = {cursorEl: this.el};
+    this.intersectedEventDetail = { cursorEl: this.el };
 
     // Bind methods.
     this.onCursorDown = bind(this.onCursorDown, this);
@@ -64408,41 +64408,47 @@ module.exports.Component = registerComponent('cursor', {
     this.onMouseMove = bind(this.onMouseMove, this);
   },
 
-  update: function (oldData) {
-    if (this.data.rayOrigin === oldData.rayOrigin) { return; }
+  update: function(oldData) {
+    if (this.data.rayOrigin === oldData.rayOrigin) {
+      return;
+    }
     this.updateMouseEventListeners();
   },
 
-  play: function () {
+  play: function() {
     this.addEventListeners();
   },
 
-  pause: function () {
+  pause: function() {
     this.removeEventListeners();
   },
 
-  remove: function () {
+  remove: function() {
     var el = this.el;
     el.removeState(STATES.HOVERING);
     el.removeState(STATES.FUSING);
     clearTimeout(this.fuseTimeout);
-    if (this.intersectedEl) { this.intersectedEl.removeState(STATES.HOVERED); }
+    if (this.intersectedEl) {
+      this.intersectedEl.removeState(STATES.HOVERED);
+    }
     this.removeEventListeners();
   },
 
-  addEventListeners: function () {
+  addEventListeners: function() {
     var canvas;
     var data = this.data;
     var el = this.el;
     var self = this;
 
-    function addCanvasListeners () {
+    function addCanvasListeners() {
       canvas = el.sceneEl.canvas;
-      if (data.downEvents.length || data.upEvents.length) { return; }
-      CANVAS_EVENTS.DOWN.forEach(function (downEvent) {
+      if (data.downEvents.length || data.upEvents.length) {
+        return;
+      }
+      CANVAS_EVENTS.DOWN.forEach(function(downEvent) {
         canvas.addEventListener(downEvent, self.onCursorDown);
       });
-      CANVAS_EVENTS.UP.forEach(function (upEvent) {
+      CANVAS_EVENTS.UP.forEach(function(upEvent) {
         canvas.addEventListener(upEvent, self.onCursorUp);
       });
     }
@@ -64454,19 +64460,22 @@ module.exports.Component = registerComponent('cursor', {
       el.sceneEl.addEventListener('render-target-loaded', addCanvasListeners);
     }
 
-    data.downEvents.forEach(function (downEvent) {
+    data.downEvents.forEach(function(downEvent) {
       el.addEventListener(downEvent, self.onCursorDown);
     });
-    data.upEvents.forEach(function (upEvent) {
+    data.upEvents.forEach(function(upEvent) {
       el.addEventListener(upEvent, self.onCursorUp);
     });
     el.addEventListener('raycaster-intersection', this.onIntersection);
-    el.addEventListener('raycaster-intersection-cleared', this.onIntersectionCleared);
+    el.addEventListener(
+      'raycaster-intersection-cleared',
+      this.onIntersectionCleared
+    );
 
     window.addEventListener('resize', this.updateCanvasBounds);
   },
 
-  removeEventListeners: function () {
+  removeEventListeners: function() {
     var canvas;
     var data = this.data;
     var el = this.el;
@@ -64474,29 +64483,32 @@ module.exports.Component = registerComponent('cursor', {
 
     canvas = el.sceneEl.canvas;
     if (canvas && !data.downEvents.length && !data.upEvents.length) {
-      CANVAS_EVENTS.DOWN.forEach(function (downEvent) {
+      CANVAS_EVENTS.DOWN.forEach(function(downEvent) {
         canvas.removeEventListener(downEvent, self.onCursorDown);
       });
-      CANVAS_EVENTS.UP.forEach(function (upEvent) {
+      CANVAS_EVENTS.UP.forEach(function(upEvent) {
         canvas.removeEventListener(upEvent, self.onCursorUp);
       });
     }
 
-    data.downEvents.forEach(function (downEvent) {
+    data.downEvents.forEach(function(downEvent) {
       el.removeEventListener(downEvent, self.onCursorDown);
     });
-    data.upEvents.forEach(function (upEvent) {
+    data.upEvents.forEach(function(upEvent) {
       el.removeEventListener(upEvent, self.onCursorUp);
     });
     el.removeEventListener('raycaster-intersection', this.onIntersection);
-    el.removeEventListener('raycaster-intersection-cleared', this.onIntersectionCleared);
+    el.removeEventListener(
+      'raycaster-intersection-cleared',
+      this.onIntersectionCleared
+    );
     canvas.removeEventListener('mousemove', this.onMouseMove);
     canvas.removeEventListener('touchstart', this.onMouseMove);
     canvas.removeEventListener('touchmove', this.onMouseMove);
     canvas.removeEventListener('resize', this.updateCanvasBounds);
   },
 
-  updateMouseEventListeners: function () {
+  updateMouseEventListeners: function() {
     var canvas;
     var el = this.el;
 
@@ -64504,20 +64516,22 @@ module.exports.Component = registerComponent('cursor', {
     canvas.removeEventListener('mousemove', this.onMouseMove);
     canvas.removeEventListener('touchmove', this.onMouseMove);
     el.setAttribute('raycaster', 'useWorldCoordinates', false);
-    if (this.data.rayOrigin !== 'mouse') { return; }
+    if (this.data.rayOrigin !== 'mouse') {
+      return;
+    }
     canvas.addEventListener('mousemove', this.onMouseMove, false);
     canvas.addEventListener('touchmove', this.onMouseMove, false);
     el.setAttribute('raycaster', 'useWorldCoordinates', true);
     this.updateCanvasBounds();
   },
 
-  onMouseMove: (function () {
+  onMouseMove: (function() {
     var direction = new THREE.Vector3();
     var mouse = new THREE.Vector2();
     var origin = new THREE.Vector3();
-    var rayCasterConfig = {origin: origin, direction: direction};
+    var rayCasterConfig = { origin: origin, direction: direction };
 
-    return function (evt) {
+    return function(evt) {
       var bounds = this.canvasBounds;
       var camera = this.el.sceneEl.camera;
       var left;
@@ -64540,16 +64554,22 @@ module.exports.Component = registerComponent('cursor', {
       mouse.y = -(top / bounds.height) * 2 + 1;
 
       origin.setFromMatrixPosition(camera.matrixWorld);
-      direction.set(mouse.x, mouse.y, 0.5).unproject(camera).sub(origin).normalize();
+      direction
+        .set(mouse.x, mouse.y, 0.5)
+        .unproject(camera)
+        .sub(origin)
+        .normalize();
       this.el.setAttribute('raycaster', rayCasterConfig);
-      if (evt.type === 'touchmove') { evt.preventDefault(); }
+      if (evt.type === 'touchmove') {
+        evt.preventDefault();
+      }
     };
   })(),
 
   /**
    * Trigger mousedown and keep track of the mousedowned entity.
    */
-  onCursorDown: function (evt) {
+  onCursorDown: function(evt) {
     // Raycast again for touch.
     if (this.data.rayOrigin === 'mouse' && evt.type === 'touchstart') {
       this.onMouseMove(evt);
@@ -64568,7 +64588,7 @@ module.exports.Component = registerComponent('cursor', {
    * - Currently-intersected entity is the same as the one when mousedown was triggered,
    *   in case user mousedowned one entity, dragged to another, and mouseupped.
    */
-  onCursorUp: function (evt) {
+  onCursorUp: function(evt) {
     this.twoWayEmit(EVENTS.MOUSEUP);
 
     // If intersected entity has changed since the cursorDown, still emit mouseUp on the
@@ -64578,18 +64598,24 @@ module.exports.Component = registerComponent('cursor', {
       this.cursorDownEl.emit(EVENTS.MOUSEUP, this.intersectedEventDetail);
     }
 
-    if (!this.data.fuse && this.intersectedEl && this.cursorDownEl === this.intersectedEl) {
+    if (
+      !this.data.fuse &&
+      this.intersectedEl &&
+      this.cursorDownEl === this.intersectedEl
+    ) {
       this.twoWayEmit(EVENTS.CLICK);
     }
 
     this.cursorDownEl = null;
-    if (evt.type === 'touchend') { evt.preventDefault(); }
+    if (evt.type === 'touchend') {
+      evt.preventDefault();
+    }
   },
 
   /**
    * Handle intersection.
    */
-  onIntersection: function (evt) {
+  onIntersection: function(evt) {
     var currentIntersection;
     var cursorEl = this.el;
     var index;
@@ -64602,15 +64628,23 @@ module.exports.Component = registerComponent('cursor', {
     intersectedEl = evt.detail.els[index];
 
     // If cursor is the only intersected object, ignore the event.
-    if (!intersectedEl) { return; }
+    if (!intersectedEl) {
+      return;
+    }
 
     // Already intersecting this entity.
-    if (this.intersectedEl === intersectedEl) { return; }
+    if (this.intersectedEl === intersectedEl) {
+      return;
+    }
 
     // Ignore events further away than active intersection.
     if (this.intersectedEl) {
-      currentIntersection = this.el.components.raycaster.getIntersection(this.intersectedEl);
-      if (currentIntersection.distance <= intersection.distance) { return; }
+      currentIntersection = this.el.components.raycaster.getIntersection(
+        this.intersectedEl
+      );
+      if (currentIntersection.distance <= intersection.distance) {
+        return;
+      }
     }
 
     // Unset current intersection.
@@ -64622,20 +64656,24 @@ module.exports.Component = registerComponent('cursor', {
   /**
    * Handle intersection cleared.
    */
-  onIntersectionCleared: function (evt) {
+  onIntersectionCleared: function(evt) {
     var clearedEls = evt.detail.clearedEls;
     // Check if the current intersection has ended
-    if (clearedEls.indexOf(this.intersectedEl) === -1) { return; }
+    if (clearedEls.indexOf(this.intersectedEl) === -1) {
+      return;
+    }
     this.clearCurrentIntersection();
   },
 
-  setIntersection: function (intersectedEl, intersection) {
+  setIntersection: function(intersectedEl, intersection) {
     var cursorEl = this.el;
     var data = this.data;
     var self = this;
 
     // Already intersecting.
-    if (this.intersectedEl === intersectedEl) { return; }
+    if (this.intersectedEl === intersectedEl) {
+      return;
+    }
 
     // Set new intersection.
     this.intersectedEl = intersectedEl;
@@ -64646,23 +64684,27 @@ module.exports.Component = registerComponent('cursor', {
     this.twoWayEmit(EVENTS.MOUSEENTER);
 
     // Begin fuse if necessary.
-    if (data.fuseTimeout === 0 || !data.fuse) { return; }
+    if (data.fuseTimeout === 0 || !data.fuse) {
+      return;
+    }
     cursorEl.addState(STATES.FUSING);
     this.twoWayEmit(EVENTS.FUSING);
-    this.fuseTimeout = setTimeout(function fuse () {
+    this.fuseTimeout = setTimeout(function fuse() {
       cursorEl.removeState(STATES.FUSING);
       self.twoWayEmit(EVENTS.CLICK);
     }, data.fuseTimeout);
   },
 
-  clearCurrentIntersection: function (ignoreRemaining) {
+  clearCurrentIntersection: function(ignoreRemaining) {
     var index;
     var intersection;
     var intersections;
     var cursorEl = this.el;
 
     // Nothing to be cleared.
-    if (!this.intersectedEl) { return; }
+    if (!this.intersectedEl) {
+      return;
+    }
 
     // No longer hovering (or fusing).
     this.intersectedEl.removeState(STATES.HOVERED);
@@ -64677,20 +64719,28 @@ module.exports.Component = registerComponent('cursor', {
     clearTimeout(this.fuseTimeout);
 
     // Set intersection to another raycasted element if any.
-    if (ignoreRemaining === true) { return; }
+    if (ignoreRemaining === true) {
+      return;
+    }
     intersections = this.el.components.raycaster.intersections;
-    if (intersections.length === 0) { return; }
+    if (intersections.length === 0) {
+      return;
+    }
     // Exclude the cursor.
     index = intersections[0].object.el === cursorEl ? 1 : 0;
     intersection = intersections[index];
-    if (!intersection) { return; }
+    if (!intersection) {
+      return;
+    }
     this.setIntersection(intersection.object.el, intersection);
   },
 
   /**
    * Helper to emit on both the cursor and the intersected entity (if exists).
    */
-  twoWayEmit: function (evtName) {
+  twoWayEmit: function(evtName) {
+    if (this.data.disabledEvents.indexOf(evtName) > -1) return; // SMIS
+
     var el = this.el;
     var intersectedEl = this.intersectedEl;
     var intersection;
@@ -64700,7 +64750,9 @@ module.exports.Component = registerComponent('cursor', {
     this.eventDetail.intersection = intersection;
     el.emit(evtName, this.eventDetail);
 
-    if (!intersectedEl) { return; }
+    if (!intersectedEl) {
+      return;
+    }
 
     this.intersectedEventDetail.intersection = intersection;
     intersectedEl.emit(evtName, this.intersectedEventDetail);
@@ -76566,7 +76618,7 @@ _dereq_('./core/a-mixin');
 _dereq_('./extras/components/');
 _dereq_('./extras/primitives/');
 
-console.log('A-Frame Version: 0.8.2 (Date 2019-04-24, Commit #c11b88ce)');
+console.log('A-Frame Version: 0.8.2 (Date 2019-04-25, Commit #10893392)');
 console.log('three Version:', pkg.dependencies['three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 
@@ -78311,27 +78363,33 @@ var polyfilledVRDisplay;
 var POLYFILL_VRDISPLAY_ID = 'Cardboard VRDisplay';
 
 if (navigator.getVRDisplays) {
-  navigator.getVRDisplays().then(function (displays) {
+  navigator.getVRDisplays().then(function(displays) {
     vrDisplay = displays.length && displays[0];
     polyfilledVRDisplay = vrDisplay.displayName === POLYFILL_VRDISPLAY_ID;
   });
 }
 
-function getVRDisplay () { return vrDisplay; }
+function getVRDisplay() {
+  return vrDisplay;
+}
 module.exports.getVRDisplay = getVRDisplay;
 
 /**
  * Determine if a headset is connected by checking if a vrDisplay is available.
  */
-function checkHeadsetConnected () { return !!getVRDisplay(); }
+function checkHeadsetConnected() {
+  return !!getVRDisplay();
+}
 module.exports.checkHeadsetConnected = checkHeadsetConnected;
 
 /**
  * Check for positional tracking.
  */
-function checkHasPositionalTracking () {
+function checkHasPositionalTracking() {
   var vrDisplay = getVRDisplay();
-  if (isMobile() || isGearVR()) { return false; }
+  if (isMobile() || isGearVR()) {
+    return false;
+  }
   return vrDisplay && vrDisplay.capabilities.hasPosition;
 }
 module.exports.checkHasPositionalTracking = checkHasPositionalTracking;
@@ -78340,11 +78398,18 @@ module.exports.checkHasPositionalTracking = checkHasPositionalTracking;
  * Checks if browser is mobile.
  * @return {Boolean} True if mobile browser detected.
  */
-var isMobile = (function () {
+var isMobile = (function() {
   var _isMobile = false;
-  (function (a) {
+  (function(a) {
     // eslint-disable-next-line no-useless-escape
-    if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) {
+    if (
+      /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(
+        a
+      ) ||
+      /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
+        a.substr(0, 4)
+      )
+    ) {
       _isMobile = true;
     }
     if (isIOS() || isTablet() || isR7()) {
@@ -78352,7 +78417,9 @@ var isMobile = (function () {
     }
   })(window.navigator.userAgent || window.navigator.vendor || window.opera);
 
-  return function () { return _isMobile; };
+  return function() {
+    return _isMobile;
+  };
 })();
 module.exports.isMobile = isMobile;
 
@@ -78360,23 +78427,25 @@ module.exports.isMobile = isMobile;
  *  Detect tablet devices.
  *  @param {string} mockUserAgent - Allow passing a mock user agent for testing.
  */
-function isTablet (mockUserAgent) {
+function isTablet(mockUserAgent) {
   var userAgent = mockUserAgent || window.navigator.userAgent;
-  return /ipad|Nexus (7|9)|xoom|sch-i800|playbook|tablet|kindle/i.test(userAgent);
+  return /ipad|Nexus (7|9)|xoom|sch-i800|playbook|tablet|kindle/i.test(
+    userAgent
+  );
 }
 module.exports.isTablet = isTablet;
 
-function isIOS () {
+function isIOS() {
   return /iPad|iPhone|iPod/.test(window.navigator.platform);
 }
 module.exports.isIOS = isIOS;
 
-function isGearVR () {
+function isGearVR() {
   return /SamsungBrowser.+Mobile VR/i.test(window.navigator.userAgent);
 }
 module.exports.isGearVR = isGearVR;
 
-function isR7 () {
+function isR7() {
   return /R7 Build/.test(window.navigator.userAgent);
 }
 module.exports.isR7 = isR7;
@@ -78385,17 +78454,19 @@ module.exports.isR7 = isR7;
  * Checks mobile device orientation.
  * @return {Boolean} True if landscape orientation.
  */
-module.exports.isLandscape = function () {
+module.exports.isLandscape = function() {
   var orientation = window.orientation;
-  if (isR7()) { orientation += 90; }
+  if (isR7()) {
+    orientation += 90;
+  }
   return orientation === 90 || orientation === -90;
 };
 
 /**
  * Check if device is iOS and older than version 10.
  */
-module.exports.isIOSOlderThan10 = function (userAgent) {
-  return /(iphone|ipod|ipad).*os.(7_|8_|9_)/i.test(userAgent);
+module.exports.isIOSOlderThan10 = function(userAgent) {
+  return /(iphone|ipod|ipad).*os.(7_|8_|9_)/i.test(userAgent); // SMIS
 };
 
 /**
@@ -78415,12 +78486,16 @@ module.exports.isNodeEnvironment = !module.exports.isBrowserEnvironment;
 /**
  * Update an Object3D pose if a polyfilled vrDisplay is present.
  */
-module.exports.PolyfillControls = function PolyfillControls (object) {
+module.exports.PolyfillControls = function PolyfillControls(object) {
   var frameData;
-  if (window.VRFrameData) { frameData = new window.VRFrameData(); }
-  this.update = function () {
+  if (window.VRFrameData) {
+    frameData = new window.VRFrameData();
+  }
+  this.update = function() {
     var pose;
-    if (!vrDisplay || !polyfilledVRDisplay) { return; }
+    if (!vrDisplay || !polyfilledVRDisplay) {
+      return;
+    }
     vrDisplay.getFrameData(frameData);
     pose = frameData.pose;
     if (pose.orientation !== null) {
@@ -78433,7 +78508,6 @@ module.exports.PolyfillControls = function PolyfillControls (object) {
     }
   };
 };
-
 
 }).call(this,_dereq_('_process'))
 

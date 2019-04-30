@@ -64381,14 +64381,9 @@ module.exports.Component = registerComponent('cursor', {
     fuseTimeout: { default: 1500, min: 0 },
     upEvents: { default: [] },
     rayOrigin: { default: 'entity', oneOf: ['mouse', 'entity'] },
-<<<<<<< Updated upstream
-    disabledEvents: { default: [] }, // SMIS - Disable these events emit on intersected Element
-    disableDragClick: { default: false }
-=======
     disabledEvents: { default: [] }, // SMIS - Disable these events emit on intersected Element,
     disableDragClick: { default: false },
     dragDisplacementThreshold: { default: 10 }
->>>>>>> Stashed changes
   },
 
   init: function() {
@@ -64580,9 +64575,6 @@ module.exports.Component = registerComponent('cursor', {
    * Trigger mousedown and keep track of the mousedowned entity.
    */
   onCursorDown: function(evt) {
-<<<<<<< Updated upstream
-    this.mouseMove = false;
-=======
     // -------- SMIS Start
     var point;
     if (evt.type === 'touchstart') {
@@ -64593,7 +64585,6 @@ module.exports.Component = registerComponent('cursor', {
     }
     this.mouseStartPosition = point;
     // -------- SMIS End
->>>>>>> Stashed changes
     // Raycast again for touch.
     if (this.data.rayOrigin === 'mouse' && evt.type === 'touchstart') {
       this.onMouseMove(evt);
@@ -64623,11 +64614,6 @@ module.exports.Component = registerComponent('cursor', {
       this.cursorDownEl.emit(EVENTS.MOUSEUP, this.intersectedEventDetail);
     }
 
-<<<<<<< Updated upstream
-    const allowEmittingDragClick =
-      !this.data.disableDragClick ||
-      (this.data.disableDragClick && !this.mouseMove);
-=======
     // -------- SMIS Start
     var startVector = {
       x: this.mouseStartPosition.clientX,
@@ -64647,17 +64633,12 @@ module.exports.Component = registerComponent('cursor', {
       !this.data.disableDragClick ||
       (this.data.disableDragClick && !displacementThresholdCrossed);
     // -------- SMIS End
->>>>>>> Stashed changes
 
     if (
       !this.data.fuse &&
       this.intersectedEl &&
       this.cursorDownEl === this.intersectedEl &&
-<<<<<<< Updated upstream
-      allowEmittingDragClick
-=======
       allowEmittingDragClick // SMIS
->>>>>>> Stashed changes
     ) {
       this.twoWayEmit(EVENTS.CLICK);
     }
@@ -76681,7 +76662,7 @@ _dereq_('./core/a-mixin');
 _dereq_('./extras/components/');
 _dereq_('./extras/primitives/');
 
-console.log('A-Frame Version: 0.8.2 (Date 2019-04-30, Commit #709c9b2e)');
+console.log('A-Frame Version: 0.8.2 (Date 2019-04-30, Commit #7c0b3b1e)');
 console.log('three Version:', pkg.dependencies['three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 

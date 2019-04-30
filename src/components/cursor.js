@@ -45,8 +45,9 @@ module.exports.Component = registerComponent('cursor', {
     fuseTimeout: { default: 1500, min: 0 },
     upEvents: { default: [] },
     rayOrigin: { default: 'entity', oneOf: ['mouse', 'entity'] },
-    disabledEvents: { default: [] }, // SMIS - Disable these events emit on intersected Element
-    disableDragClick: { default: false }
+    disabledEvents: { default: [] }, // SMIS - Disable these events emit on intersected Element,
+    disableDragClick: { default: false },
+    dragDisplacementThreshold: { default: 10 }
   },
 
   init: function() {
@@ -215,6 +216,7 @@ module.exports.Component = registerComponent('cursor', {
         point = evt;
       }
 
+      this.mouseMovePosition = point; // SMIS
       left = point.clientX - bounds.left;
       top = point.clientY - bounds.top;
       mouse.x = (left / bounds.width) * 2 - 1;
@@ -237,7 +239,16 @@ module.exports.Component = registerComponent('cursor', {
    * Trigger mousedown and keep track of the mousedowned entity.
    */
   onCursorDown: function(evt) {
-    this.mouseMove = false;
+    // -------- SMIS Start
+    var point;
+    if (evt.type === 'touchstart') {
+      // Track the first touch for simplicity.
+      point = evt.touches.item(0);
+    } else {
+      point = evt;
+    }
+    this.mouseStartPosition = point;
+    // -------- SMIS End
     // Raycast again for touch.
     if (this.data.rayOrigin === 'mouse' && evt.type === 'touchstart') {
       this.onMouseMove(evt);
@@ -257,6 +268,7 @@ module.exports.Component = registerComponent('cursor', {
    *   in case user mousedowned one entity, dragged to another, and mouseupped.
    */
   onCursorUp: function(evt) {
+    console.log('TCL: onCursorUp evt', evt);
     this.twoWayEmit(EVENTS.MOUSEUP);
 
     // If intersected entity has changed since the cursorDown, still emit mouseUp on the
@@ -266,15 +278,31 @@ module.exports.Component = registerComponent('cursor', {
       this.cursorDownEl.emit(EVENTS.MOUSEUP, this.intersectedEventDetail);
     }
 
-    const allowEmittingDragClick =
+    // -------- SMIS Start
+    var startVector = {
+      x: this.mouseStartPosition.clientX,
+      y: this.mouseStartPosition.clientY
+    };
+
+    var mouseMovePosition = {
+      x: this.mouseMovePosition.clientX,
+      y: this.mouseMovePosition.clientY
+    };
+
+    var displacement = distance2DVector(startVector, mouseMovePosition);
+    var DISPLACEMENT_THRESHOLD = this.data.dragDisplacementThreshold;
+    var displacementThresholdCrossed = displacement > DISPLACEMENT_THRESHOLD;
+
+    var allowEmittingDragClick =
       !this.data.disableDragClick ||
-      (this.data.disableDragClick && !this.mouseMove);
+      (this.data.disableDragClick && !displacementThresholdCrossed);
+    // -------- SMIS End
 
     if (
       !this.data.fuse &&
       this.intersectedEl &&
       this.cursorDownEl === this.intersectedEl &&
-      allowEmittingDragClick
+      allowEmittingDragClick // SMIS
     ) {
       this.twoWayEmit(EVENTS.CLICK);
     }
@@ -431,3 +459,10 @@ module.exports.Component = registerComponent('cursor', {
     intersectedEl.emit(evtName, this.intersectedEventDetail);
   }
 });
+
+function distance2DVector(pt1, pt2) {
+  var dx = pt1.x - pt2.x;
+  var dy = pt1.y - pt2.y;
+
+  return Math.sqrt(dx * dx + dy * dy);
+}

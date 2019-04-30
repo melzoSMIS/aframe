@@ -32,7 +32,11 @@
         <a-camera>
           <a-entity
             raycaster="far: 30; objects: .intersectable"
+<<<<<<< Updated upstream
             cursor="disableDragClick: true; rayOrigin: mouse"
+=======
+            cursor="disableDragClick: false; rayOrigin: mouse"
+>>>>>>> Stashed changes
             geometry="primitive: ring; radiusOuter: 0.015;
                               radiusInner: 0.01; segmentsTheta: 32"
             material="color: #283644; shader: flat"
@@ -182,6 +186,7 @@
         // testing mouseenter and mouseleave
         var foregroundCube = document.querySelector('#foregroundCube');
         foregroundCube.addEventListener('mouseenter', function(evt) {
+<<<<<<< Updated upstream
           foregroundCube.setAttribute('mixin', 'cube cube-hovered');
         });
         foregroundCube.addEventListener('mouseleave', function(evt) {
@@ -191,6 +196,21 @@
           foregroundCube.setAttribute('mixin', 'cube cube-selected');
         });
         foregroundCube.addEventListener('mouseup', function(evt) {
+=======
+          console.log('TCL: mouseenter evt', evt);
+          foregroundCube.setAttribute('mixin', 'cube cube-hovered');
+        });
+        foregroundCube.addEventListener('mouseleave', function(evt) {
+          console.log('TCL: mouseleave evt', evt);
+          foregroundCube.setAttribute('mixin', 'green cube');
+        });
+        foregroundCube.addEventListener('mousedown', function(evt) {
+          console.log('TCL: mousedown evt', evt);
+          foregroundCube.setAttribute('mixin', 'cube cube-selected');
+        });
+        foregroundCube.addEventListener('mouseup', function(evt) {
+          console.log('TCL: mouseup evt', evt);
+>>>>>>> Stashed changes
           foregroundCube.setAttribute('mixin', 'cube cube-hovered');
         });
         foregroundCube.addEventListener('click', function(evt) {

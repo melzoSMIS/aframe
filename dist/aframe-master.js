@@ -64381,7 +64381,8 @@ module.exports.Component = registerComponent('cursor', {
     fuseTimeout: { default: 1500, min: 0 },
     upEvents: { default: [] },
     rayOrigin: { default: 'entity', oneOf: ['mouse', 'entity'] },
-    disabledEvents: { default: [] } // SMIS - Disable these events emit on intersected Element
+    disabledEvents: { default: [] }, // SMIS - Disable these events emit on intersected Element
+    disableDragClick: { default: false }
   },
 
   init: function() {
@@ -64391,6 +64392,7 @@ module.exports.Component = registerComponent('cursor', {
     this.cursorDownEl = null;
     this.intersectedEl = null;
     this.canvasBounds = document.body.getBoundingClientRect();
+    this.mouseMove = false;
 
     // Debounce.
     this.updateCanvasBounds = utils.debounce(function updateCanvasBounds() {
@@ -64532,6 +64534,7 @@ module.exports.Component = registerComponent('cursor', {
     var rayCasterConfig = { origin: origin, direction: direction };
 
     return function(evt) {
+      this.mouseMove = true;
       var bounds = this.canvasBounds;
       var camera = this.el.sceneEl.camera;
       var left;
@@ -64570,6 +64573,7 @@ module.exports.Component = registerComponent('cursor', {
    * Trigger mousedown and keep track of the mousedowned entity.
    */
   onCursorDown: function(evt) {
+    this.mouseMove = false;
     // Raycast again for touch.
     if (this.data.rayOrigin === 'mouse' && evt.type === 'touchstart') {
       this.onMouseMove(evt);
@@ -64598,10 +64602,15 @@ module.exports.Component = registerComponent('cursor', {
       this.cursorDownEl.emit(EVENTS.MOUSEUP, this.intersectedEventDetail);
     }
 
+    const allowEmittingDragClick =
+      !this.data.disableDragClick ||
+      (this.data.disableDragClick && !this.mouseMove);
+
     if (
       !this.data.fuse &&
       this.intersectedEl &&
-      this.cursorDownEl === this.intersectedEl
+      this.cursorDownEl === this.intersectedEl &&
+      allowEmittingDragClick
     ) {
       this.twoWayEmit(EVENTS.CLICK);
     }
@@ -76618,7 +76627,7 @@ _dereq_('./core/a-mixin');
 _dereq_('./extras/components/');
 _dereq_('./extras/primitives/');
 
-console.log('A-Frame Version: 0.8.2 (Date 2019-04-25, Commit #10893392)');
+console.log('A-Frame Version: 0.8.2 (Date 2019-04-30, Commit #709c9b2e)');
 console.log('three Version:', pkg.dependencies['three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 

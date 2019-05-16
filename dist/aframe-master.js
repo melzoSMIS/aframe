@@ -66538,15 +66538,16 @@ module.exports.Component = registerComponent('look-controls', {
   dependencies: ['position', 'rotation'],
 
   schema: {
-    enabled: {default: true},
+    enabled: { default: true },
     gyroModeEnabled: { default: false }, // SMIS
-    hmdEnabled: {default: true},
-    pointerLockEnabled: {default: false},
-    reverseMouseDrag: {default: false},
-    touchEnabled: {default: true}
+    hmdEnabled: { default: true },
+    pointerLockEnabled: { default: false },
+    reverseMouseDrag: { default: false },
+    touchEnabled: { default: true },
+    disableVerticalMotion: { default: false }
   },
 
-  init: function () {
+  init: function() {
     this.previousHMDPosition = new THREE.Vector3();
     this.hmdQuaternion = new THREE.Quaternion();
     this.hmdEuler = new THREE.Euler();
@@ -66569,10 +66570,12 @@ module.exports.Component = registerComponent('look-controls', {
     };
 
     // Call enter VR handler if the scene has entered VR before the event listeners attached.
-    if (this.el.sceneEl.is('vr-mode')) { this.onEnterVR(); }
+    if (this.el.sceneEl.is('vr-mode')) {
+      this.onEnterVR();
+    }
   },
 
-  update: function (oldData) {
+  update: function(oldData) {
     var data = this.data;
 
     // Disable grab cursor classes if no longer enabled.
@@ -66589,29 +66592,33 @@ module.exports.Component = registerComponent('look-controls', {
     if (oldData && !data.pointerLockEnabled !== oldData.pointerLockEnabled) {
       this.removeEventListeners();
       this.addEventListeners();
-      if (this.pointerLocked) { document.exitPointerLock(); }
+      if (this.pointerLocked) {
+        document.exitPointerLock();
+      }
     }
   },
 
-  tick: function (t) {
+  tick: function(t) {
     var data = this.data;
-    if (!data.enabled) { return; }
+    if (!data.enabled) {
+      return;
+    }
     this.updateOrientation();
   },
 
-  play: function () {
+  play: function() {
     this.addEventListeners();
   },
 
-  pause: function () {
+  pause: function() {
     this.removeEventListeners();
   },
 
-  remove: function () {
+  remove: function() {
     this.removeEventListeners();
   },
 
-  bindMethods: function () {
+  bindMethods: function() {
     this.onMouseDown = bind(this.onMouseDown, this);
     this.onMouseMove = bind(this.onMouseMove, this);
     this.onMouseUp = bind(this.onMouseUp, this);
@@ -66624,10 +66631,10 @@ module.exports.Component = registerComponent('look-controls', {
     this.onPointerLockError = bind(this.onPointerLockError, this);
   },
 
- /**
-  * Set up states and Object3Ds needed to store rotation data.
-  */
-  setupMouseControls: function () {
+  /**
+   * Set up states and Object3Ds needed to store rotation data.
+   */
+  setupMouseControls: function() {
     this.mouseDown = false;
     this.pitchObject = new THREE.Object3D();
     this.yawObject = new THREE.Object3D();
@@ -66638,13 +66645,16 @@ module.exports.Component = registerComponent('look-controls', {
   /**
    * Add mouse and touch event listeners to canvas.
    */
-  addEventListeners: function () {
+  addEventListeners: function() {
     var sceneEl = this.el.sceneEl;
     var canvasEl = sceneEl.canvas;
 
     // Wait for canvas to load.
     if (!canvasEl) {
-      sceneEl.addEventListener('render-target-loaded', bind(this.addEventListeners, this));
+      sceneEl.addEventListener(
+        'render-target-loaded',
+        bind(this.addEventListeners, this)
+      );
       return;
     }
 
@@ -66664,20 +66674,34 @@ module.exports.Component = registerComponent('look-controls', {
 
     // Pointer Lock events.
     if (this.data.pointerLockEnabled) {
-      document.addEventListener('pointerlockchange', this.onPointerLockChange, false);
-      document.addEventListener('mozpointerlockchange', this.onPointerLockChange, false);
-      document.addEventListener('pointerlockerror', this.onPointerLockError, false);
+      document.addEventListener(
+        'pointerlockchange',
+        this.onPointerLockChange,
+        false
+      );
+      document.addEventListener(
+        'mozpointerlockchange',
+        this.onPointerLockChange,
+        false
+      );
+      document.addEventListener(
+        'pointerlockerror',
+        this.onPointerLockError,
+        false
+      );
     }
   },
 
   /**
    * Remove mouse and touch event listeners from canvas.
    */
-  removeEventListeners: function () {
+  removeEventListeners: function() {
     var sceneEl = this.el.sceneEl;
     var canvasEl = sceneEl && sceneEl.canvas;
 
-    if (!canvasEl) { return; }
+    if (!canvasEl) {
+      return;
+    }
 
     // Mouse events.
     canvasEl.removeEventListener('mousedown', this.onMouseDown);
@@ -66694,16 +66718,28 @@ module.exports.Component = registerComponent('look-controls', {
     sceneEl.removeEventListener('exit-vr', this.onExitVR);
 
     // Pointer Lock events.
-    document.removeEventListener('pointerlockchange', this.onPointerLockChange, false);
-    document.removeEventListener('mozpointerlockchange', this.onPointerLockChange, false);
-    document.removeEventListener('pointerlockerror', this.onPointerLockError, false);
+    document.removeEventListener(
+      'pointerlockchange',
+      this.onPointerLockChange,
+      false
+    );
+    document.removeEventListener(
+      'mozpointerlockchange',
+      this.onPointerLockChange,
+      false
+    );
+    document.removeEventListener(
+      'pointerlockerror',
+      this.onPointerLockError,
+      false
+    );
   },
 
   /**
    * Update orientation for mobile, mouse drag, and headset.
    * Mouse-drag only enabled if HMD is not active.
    */
-  updateOrientation: function () {
+  updateOrientation: function() {
     var el = this.el;
     var hmdEuler = this.hmdEuler;
     var pitchObject = this.pitchObject;
@@ -66712,19 +66748,25 @@ module.exports.Component = registerComponent('look-controls', {
     var gyroModeEnabled = this.data.gyroModeEnabled;
 
     // In VR mode, THREE is in charge of updating the camera rotation.
-    if (sceneEl.is('vr-mode') && sceneEl.checkHeadsetConnected()) { return; }
+    if (sceneEl.is('vr-mode') && sceneEl.checkHeadsetConnected()) {
+      return;
+    }
 
     // Calculate polyfilled HMD quaternion.
     this.polyfillControls.update();
     hmdEuler.setFromQuaternion(this.polyfillObject.quaternion, 'YXZ');
 
     if (!gyroModeEnabled) {
-      el.object3D.rotation.x = pitchObject.rotation.x;
+      if (!this.data.disableVerticalMotion) {
+        el.object3D.rotation.x = pitchObject.rotation.x;
+      }
       el.object3D.rotation.y = yawObject.rotation.y;
       el.object3D.rotation.z = 0;
     } else {
       // On mobile, do camera rotation with touch events and sensors.
-      el.object3D.rotation.x = hmdEuler.x + pitchObject.rotation.x;
+      if (!this.data.disableVerticalMotion) {
+        el.object3D.rotation.x = hmdEuler.x + pitchObject.rotation.x;
+      }
       el.object3D.rotation.y = hmdEuler.y + yawObject.rotation.y;
       el.object3D.rotation.z = 0;
     }
@@ -66736,7 +66778,7 @@ module.exports.Component = registerComponent('look-controls', {
    * Dragging up and down rotates the camera around the X-axis (yaw).
    * Dragging left and right rotates the camera around the Y-axis (pitch).
    */
-  onMouseMove: function (event) {
+  onMouseMove: function(event) {
     var direction;
     var movementX;
     var movementY;
@@ -66745,7 +66787,9 @@ module.exports.Component = registerComponent('look-controls', {
     var yawObject = this.yawObject;
 
     // Not dragging or not enabled.
-    if (!this.data.enabled || (!this.mouseDown && !this.pointerLocked)) { return; }
+    if (!this.data.enabled || (!this.mouseDown && !this.pointerLocked)) {
+      return;
+    }
 
     // Calculate delta.
     if (this.pointerLocked) {
@@ -66761,16 +66805,23 @@ module.exports.Component = registerComponent('look-controls', {
     direction = this.data.reverseMouseDrag ? 1 : -1;
     yawObject.rotation.y += movementX * 0.002 * direction;
     pitchObject.rotation.x += movementY * 0.002 * direction;
-    pitchObject.rotation.x = Math.max(-PI_2, Math.min(PI_2, pitchObject.rotation.x));
+    pitchObject.rotation.x = Math.max(
+      -PI_2,
+      Math.min(PI_2, pitchObject.rotation.x)
+    );
   },
 
   /**
    * Register mouse down to detect mouse drag.
    */
-  onMouseDown: function (evt) {
-    if (!this.data.enabled) { return; }
+  onMouseDown: function(evt) {
+    if (!this.data.enabled) {
+      return;
+    }
     // Handle only primary button.
-    if (evt.button !== 0) { return; }
+    if (evt.button !== 0) {
+      return;
+    }
 
     var sceneEl = this.el.sceneEl;
     var canvasEl = sceneEl && sceneEl.canvas;
@@ -66791,7 +66842,7 @@ module.exports.Component = registerComponent('look-controls', {
   /**
    * Register mouse up to detect release of mouse drag.
    */
-  onMouseUp: function () {
+  onMouseUp: function() {
     this.mouseDown = false;
     document.body.classList.remove(GRABBING_CLASS);
   },
@@ -66799,8 +66850,10 @@ module.exports.Component = registerComponent('look-controls', {
   /**
    * Register touch down to detect touch drag.
    */
-  onTouchStart: function (evt) {
-    if (evt.touches.length !== 1 || !this.data.touchEnabled) { return; }
+  onTouchStart: function(evt) {
+    if (evt.touches.length !== 1 || !this.data.touchEnabled) {
+      return;
+    }
     this.touchStart = {
       x: evt.touches[0].pageX,
       y: evt.touches[0].pageY
@@ -66811,17 +66864,23 @@ module.exports.Component = registerComponent('look-controls', {
   /**
    * Translate touch move to Y-axis rotation.
    */
-  onTouchMove: function (evt) {
+  onTouchMove: function(evt) {
     var canvas = this.el.sceneEl.canvas;
     var deltaY;
     var deltaX; // SMIS
     var yawObject = this.yawObject;
     var pitchObject = this.pitchObject; // SMIS
 
-    if (!this.touchStarted || !this.data.touchEnabled) { return; }
+    if (!this.touchStarted || !this.data.touchEnabled) {
+      return;
+    }
 
-    deltaY = 2 * Math.PI * (evt.touches[0].pageX - this.touchStart.x) / canvas.clientWidth;
-    deltaX = 2 * Math.PI * (evt.touches[0].pageY - this.touchStart.y) / canvas.clientHeight; // SMIS
+    deltaY =
+      (2 * Math.PI * (evt.touches[0].pageX - this.touchStart.x)) /
+      canvas.clientWidth;
+    deltaX =
+      (2 * Math.PI * (evt.touches[0].pageY - this.touchStart.y)) /
+      canvas.clientHeight; // SMIS
 
     // Limit touch orientaion to to yaw (y axis).
     yawObject.rotation.y -= deltaY * 0.5;
@@ -66835,21 +66894,21 @@ module.exports.Component = registerComponent('look-controls', {
   /**
    * Register touch end to detect release of touch drag.
    */
-  onTouchEnd: function () {
+  onTouchEnd: function() {
     this.touchStarted = false;
   },
 
   /**
    * Save pose.
    */
-  onEnterVR: function () {
+  onEnterVR: function() {
     this.saveCameraPose();
   },
 
   /**
    * Restore the pose.
    */
-  onExitVR: function () {
+  onExitVR: function() {
     this.restoreCameraPose();
     this.previousHMDPosition.set(0, 0, 0);
   },
@@ -66857,25 +66916,31 @@ module.exports.Component = registerComponent('look-controls', {
   /**
    * Update Pointer Lock state.
    */
-  onPointerLockChange: function () {
-    this.pointerLocked = !!(document.pointerLockElement || document.mozPointerLockElement);
+  onPointerLockChange: function() {
+    this.pointerLocked = !!(
+      document.pointerLockElement || document.mozPointerLockElement
+    );
   },
 
   /**
    * Recover from Pointer Lock error.
    */
-  onPointerLockError: function () {
+  onPointerLockError: function() {
     this.pointerLocked = false;
   },
 
   /**
    * Toggle the feature of showing/hiding the grab cursor.
    */
-  updateGrabCursor: function (enabled) {
+  updateGrabCursor: function(enabled) {
     var sceneEl = this.el.sceneEl;
 
-    function enableGrabCursor () { sceneEl.canvas.classList.add('a-grab-cursor'); }
-    function disableGrabCursor () { sceneEl.canvas.classList.remove('a-grab-cursor'); }
+    function enableGrabCursor() {
+      sceneEl.canvas.classList.add('a-grab-cursor');
+    }
+    function disableGrabCursor() {
+      sceneEl.canvas.classList.remove('a-grab-cursor');
+    }
 
     if (!sceneEl.canvas) {
       if (enabled) {
@@ -66896,13 +66961,16 @@ module.exports.Component = registerComponent('look-controls', {
   /**
    * Save camera pose before entering VR to restore later if exiting.
    */
-  saveCameraPose: function () {
+  saveCameraPose: function() {
     var el = this.el;
-    var hasPositionalTracking = this.hasPositionalTracking !== undefined
-      ? this.hasPositionalTracking
-      : checkHasPositionalTracking();
+    var hasPositionalTracking =
+      this.hasPositionalTracking !== undefined
+        ? this.hasPositionalTracking
+        : checkHasPositionalTracking();
 
-    if (this.hasSavedPose || !hasPositionalTracking) { return; }
+    if (this.hasSavedPose || !hasPositionalTracking) {
+      return;
+    }
 
     this.savedPose.position.copy(el.object3D.position);
     this.savedPose.rotation.copy(el.object3D.rotation);
@@ -66912,14 +66980,17 @@ module.exports.Component = registerComponent('look-controls', {
   /**
    * Reset camera pose to before entering VR.
    */
-  restoreCameraPose: function () {
+  restoreCameraPose: function() {
     var el = this.el;
     var savedPose = this.savedPose;
-    var hasPositionalTracking = this.hasPositionalTracking !== undefined
-      ? this.hasPositionalTracking
-      : checkHasPositionalTracking();
+    var hasPositionalTracking =
+      this.hasPositionalTracking !== undefined
+        ? this.hasPositionalTracking
+        : checkHasPositionalTracking();
 
-    if (!this.hasSavedPose || !hasPositionalTracking) { return; }
+    if (!this.hasSavedPose || !hasPositionalTracking) {
+      return;
+    }
 
     // Reset camera orientation.
     el.object3D.position.copy(savedPose.position);
@@ -76662,7 +76733,7 @@ _dereq_('./core/a-mixin');
 _dereq_('./extras/components/');
 _dereq_('./extras/primitives/');
 
-console.log('A-Frame Version: 0.8.2 (Date 2019-04-30, Commit #7c0b3b1e)');
+console.log('A-Frame Version: 0.8.2 (Date 2019-05-16, Commit #b037c12c)');
 console.log('three Version:', pkg.dependencies['three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 

@@ -66868,6 +66868,7 @@ module.exports.Component = registerComponent('look-controls', {
     var canvas = this.el.sceneEl.canvas;
     var deltaY;
     var deltaX; // SMIS
+    var direction;
     var yawObject = this.yawObject;
     var pitchObject = this.pitchObject; // SMIS
 
@@ -66883,8 +66884,9 @@ module.exports.Component = registerComponent('look-controls', {
       canvas.clientHeight; // SMIS
 
     // Limit touch orientaion to to yaw (y axis).
-    yawObject.rotation.y -= deltaY * 0.5;
-    pitchObject.rotation.x -= deltaX * 0.5; // SMIS
+    direction = this.data.reverseMouseDrag ? -1 : 1;
+    yawObject.rotation.y -= deltaY * 0.5 * direction;
+    pitchObject.rotation.x -= deltaX * 0.5 * direction; // SMIS
     this.touchStart = {
       x: evt.touches[0].pageX,
       y: evt.touches[0].pageY
@@ -76733,7 +76735,7 @@ _dereq_('./core/a-mixin');
 _dereq_('./extras/components/');
 _dereq_('./extras/primitives/');
 
-console.log('A-Frame Version: 0.8.2 (Date 2019-05-16, Commit #b037c12c)');
+console.log('A-Frame Version: 0.8.2 (Date 2019-05-17, Commit #a67f4f3e)');
 console.log('three Version:', pkg.dependencies['three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 

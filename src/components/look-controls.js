@@ -23,7 +23,8 @@ module.exports.Component = registerComponent('look-controls', {
     pointerLockEnabled: { default: false },
     reverseMouseDrag: { default: false },
     touchEnabled: { default: true },
-    disableVerticalMotion: { default: false }
+    disableVerticalMotion: { default: false },
+    disableHorizontalMotion: { default: false }
   },
 
   init: function() {
@@ -239,14 +240,18 @@ module.exports.Component = registerComponent('look-controls', {
       if (!this.data.disableVerticalMotion) {
         el.object3D.rotation.x = pitchObject.rotation.x;
       }
-      el.object3D.rotation.y = yawObject.rotation.y;
+      if (!this.data.disableHorizontalMotion) {
+        el.object3D.rotation.y = yawObject.rotation.y;
+      }
       el.object3D.rotation.z = 0;
     } else {
       // On mobile, do camera rotation with touch events and sensors.
       if (!this.data.disableVerticalMotion) {
         el.object3D.rotation.x = hmdEuler.x + pitchObject.rotation.x;
       }
-      el.object3D.rotation.y = hmdEuler.y + yawObject.rotation.y;
+      if (!this.data.disableHorizontalMotion) {
+        el.object3D.rotation.y = hmdEuler.y + yawObject.rotation.y;
+      }
       el.object3D.rotation.z = 0;
     }
   },

@@ -296,54 +296,51 @@ module.exports.AScene = registerElement('a-scene', {
      *   Oculus Browser GearVR back button).
      * @returns {Promise}
      */
-    exitVR: {
-      value: function (fromExternal) {
-        var self = this;
-        // var vrDisplay; SMIS
-
-        // Don't exit VR if not in VR.
-        if (!this.is('vr-mode')) { return Promise.resolve('Not in VR.'); }
-
-        exitFullscreen();
-
-        // Handle exiting VR if not yet already and in a headset or polyfill.
-        // SMIS
-        if (!fromExternal && (this.checkHeadsetConnected() || this.isMobile) || this.isMobile) {
-          this.renderer.vr.enabled = false;
-          // SMIS commented
-          // vrDisplay = utils.device.getVRDisplay();
-          // return vrDisplay.exitPresent().then(exitVRSuccess, exitVRFailure);
-        }
-
-        // Handle exiting VR in all other cases (2D fullscreen, external exit VR event).
-        exitVRSuccess();
-
-        return Promise.resolve();
-
-        function exitVRSuccess () {
-          self.removeState('vr-mode');
-          // Lock to landscape orientation on mobile.
-          if (self.isMobile && screen.orientation && screen.orientation.unlock) {
-            screen.orientation.unlock();
+      exitVR: {
+        value: function (fromExternal) {
+          var self = this;
+          var vrDisplay;
+  
+          // Don't exit VR if not in VR.
+          if (!this.is('vr-mode')) { return Promise.resolve('Not in VR.'); }
+  
+          exitFullscreen();
+  
+          // Handle exiting VR if not yet already and in a headset or polyfill.
+          if (!fromExternal && (this.checkHeadsetConnected() || this.isMobile)) {
+            this.renderer.vr.enabled = false;
+            vrDisplay = utils.device.getVRDisplay();
+            return vrDisplay.exitPresent().then(exitVRSuccess, exitVRFailure);
           }
-          // Exiting VR in embedded mode, no longer need fullscreen styles.
-          if (self.hasAttribute('embedded')) { self.removeFullScreenStyles(); }
-          self.resize();
-          if (self.isIOS) { utils.forceCanvasResizeSafariMobile(this.canvas); }
-          self.emit('exit-vr', {target: self});
-        }
-
-        /* SMIS
-        function exitVRFailure (err) {
-          if (err && err.message) {
-            throw new Error('Failed to exit VR mode (`exitPresent`): ' + err.message);
-          } else {
-            throw new Error('Failed to exit VR mode (`exitPresent`).');
+  
+          // Handle exiting VR in all other cases (2D fullscreen, external exit VR event).
+          exitVRSuccess();
+  
+          return Promise.resolve();
+  
+          function exitVRSuccess () {
+            self.removeState('vr-mode');
+            // Lock to landscape orientation on mobile.
+            if (self.isMobile && screen.orientation && screen.orientation.unlock) {
+              screen.orientation.unlock();
+            }
+            // Exiting VR in embedded mode, no longer need fullscreen styles.
+            if (self.hasAttribute('embedded')) { self.removeFullScreenStyles(); }
+            self.resize();
+            if (self.isIOS) { utils.forceCanvasResizeSafariMobile(this.canvas); }
+            self.emit('exit-vr', {target: self});
           }
-        } */
+  
+          function exitVRFailure (err) {
+            if (err && err.message) {
+              throw new Error('Failed to exit VR mode (`exitPresent`): ' + err.message);
+            } else {
+              throw new Error('Failed to exit VR mode (`exitPresent`).');
+            }
+          }
+        },
+        writable: true
       },
-      writable: true
-    },
 
     pointerRestricted: {
       value: function () {

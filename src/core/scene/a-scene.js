@@ -56,7 +56,7 @@ module.exports.AScene = registerElement('a-scene', {
 
     init: {
       value: function () {
-        this.behaviors = { tick: [], tock: [] };
+        this.behaviors = {tick: [], tock: []};
         this.hasLoaded = false;
         this.isPlaying = false;
         this.originalHTML = this.innerHTML;
@@ -253,15 +253,15 @@ module.exports.AScene = registerElement('a-scene', {
           vrDisplay = utils.device.getVRDisplay();
           vrManager.setDevice(vrDisplay);
           vrManager.enabled = true;
-          return vrDisplay.requestPresent([{ source: this.canvas }])
-            .then(enterVRSuccess, enterVRFailure);
+          return vrDisplay.requestPresent([{source: this.canvas}])
+                          .then(enterVRSuccess, enterVRFailure);
         }
         enterVRSuccess();
         return Promise.resolve();
 
-        function enterVRSuccess() {
+        function enterVRSuccess () {
           self.addState('vr-mode');
-          self.emit('enter-vr', { target: self });
+          self.emit('enter-vr', {target: self});
           // Lock to landscape orientation on mobile.
           if (self.isMobile && screen.orientation && screen.orientation.lock) {
             screen.orientation.lock('landscape');
@@ -278,7 +278,7 @@ module.exports.AScene = registerElement('a-scene', {
           self.resize();
         }
 
-        function enterVRFailure(err) {
+        function enterVRFailure (err) {
           if (err && err.message) {
             throw new Error('Failed to enter VR mode (`requestPresent`): ' + err.message);
           } else {
@@ -288,18 +288,18 @@ module.exports.AScene = registerElement('a-scene', {
       },
       writable: true
     },
-    /**
-    * Call `exitPresent` if WebVR or WebVR polyfill.
-    * Handle events, states, fullscreen styles.
-    *
-    * @param {bool} fromExternal - Whether exiting VR due to an external event (e.g.,
-    *   Oculus Browser GearVR back button).
-    * @returns {Promise}
-    */
+     /**
+     * Call `exitPresent` if WebVR or WebVR polyfill.
+     * Handle events, states, fullscreen styles.
+     *
+     * @param {bool} fromExternal - Whether exiting VR due to an external event (e.g.,
+     *   Oculus Browser GearVR back button).
+     * @returns {Promise}
+     */
     exitVR: {
       value: function (fromExternal) {
         var self = this;
-        var vrDisplay;
+        // var vrDisplay; SMIS
 
         // Don't exit VR if not in VR.
         if (!this.is('vr-mode')) { return Promise.resolve('Not in VR.'); }
@@ -320,27 +320,27 @@ module.exports.AScene = registerElement('a-scene', {
 
         return Promise.resolve();
 
-        function exitVRSuccess() {
+        function exitVRSuccess () {
           self.removeState('vr-mode');
           // Lock to landscape orientation on mobile.
           if (self.isMobile && screen.orientation && screen.orientation.unlock) {
             screen.orientation.unlock();
           }
           // Exiting VR in embedded mode, no longer need fullscreen styles.
-
           if (self.hasAttribute('embedded')) { self.removeFullScreenStyles(); }
           self.resize();
           if (self.isIOS) { utils.forceCanvasResizeSafariMobile(this.canvas); }
-          self.emit('exit-vr', { target: self });
+          self.emit('exit-vr', {target: self});
         }
 
-        function exitVRFailure(err) {
+        /* SMIS
+        function exitVRFailure (err) {
           if (err && err.message) {
             throw new Error('Failed to exit VR mode (`exitPresent`): ' + err.message);
           } else {
             throw new Error('Failed to exit VR mode (`exitPresent`).');
           }
-        }
+        } */
       },
       writable: true
     },
@@ -541,7 +541,7 @@ module.exports.AScene = registerElement('a-scene', {
           }
           this.addEventListener('camera-set-active', function () { startRender(this); });
 
-          function startRender(sceneEl) {
+          function startRender (sceneEl) {
             if (sceneEl.renderStarted) { return; }
 
             sceneEl.resize();
@@ -659,7 +659,7 @@ module.exports.AScene = registerElement('a-scene', {
  * @param {object} canvasEl - the canvas element
  * @param {boolean} embedded - Is the scene embedded?
  */
-function getCanvasSize(canvasEl, embedded) {
+function getCanvasSize (canvasEl, embedded) {
   if (embedded) {
     return {
       height: canvasEl.parentElement.offsetHeight,
@@ -672,7 +672,7 @@ function getCanvasSize(canvasEl, embedded) {
   };
 }
 
-function requestFullscreen(canvas) {
+function requestFullscreen (canvas) {
   var requestFullscreen =
     canvas.requestFullscreen ||
     canvas.webkitRequestFullscreen ||
@@ -681,7 +681,7 @@ function requestFullscreen(canvas) {
   requestFullscreen.apply(canvas);
 }
 
-function exitFullscreen() {
+function exitFullscreen () {
   if (document.exitFullscreen) {
     document.exitFullscreen();
   } else if (document.mozCancelFullScreen) {
@@ -691,7 +691,7 @@ function exitFullscreen() {
   }
 }
 
-function setupCanvas(sceneEl) {
+function setupCanvas (sceneEl) {
   var canvasEl;
 
   canvasEl = document.createElement('canvas');
@@ -709,12 +709,12 @@ function setupCanvas(sceneEl) {
 
   // Set canvas on scene.
   sceneEl.canvas = canvasEl;
-  sceneEl.emit('render-target-loaded', { target: canvasEl });
+  sceneEl.emit('render-target-loaded', {target: canvasEl});
   // For unknown reasons a synchronous resize does not work on desktop when
   // entering/exiting fullscreen.
   setTimeout(bind(sceneEl.resize, sceneEl), 0);
 
-  function onFullScreenChange() {
+  function onFullScreenChange () {
     var fullscreenEl =
       document.fullscreenElement ||
       document.mozFullScreenElement ||
